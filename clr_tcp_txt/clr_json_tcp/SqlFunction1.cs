@@ -425,6 +425,7 @@ public partial class UserDefinedFunctions
         StringBuilder bi = new StringBuilder();
         StringBuilder ids_error = new StringBuilder();
         string json;
+        bool existID = false; 
 
         try
         {
@@ -439,20 +440,28 @@ public partial class UserDefinedFunctions
                     for (var i = 0; i < reader.FieldCount; i++)
                     {
                         columns[i] = reader.GetName(i).ToLower();
-                        if (columns[i] == "id") indexID = i;
+                        if (columns[i] == "id")
+                        {
+                            indexID = i; 
+                            existID = true;
+                        }
                     }
 
                     int k = 0;
+                    long id = 0;
                     while (reader.Read())
                     {
                         var dic = new Dictionary<string, object>();
                         for (var i = 0; i < reader.FieldCount; i++)
                             dic.Add(columns[i], reader.GetValue(i));
 
-                        SqlInt64 id = new SqlInt64(k);
-                        if (indexID != -1) id = reader.GetSqlInt64(indexID);
+                        id = k;
+
+                        if (existID)
+                            long.TryParse(dic["id"].ToString(), out id);
 
                         json = JsonConvert.SerializeObject(dic);
+
                         if (json.Length > MAX_NVARCHAR)
                         {
                             json = ":ERROR [" + id.ToString() + "] Json length > " + MAX_NVARCHAR.ToString();
@@ -461,7 +470,7 @@ public partial class UserDefinedFunctions
                             ids_error.AppendLine(id.ToString());
                         }
                         else
-                            resultCollection.Add(new TableResult(id, json));
+                            resultCollection.Add(new TableResult(new SqlInt64(id), json));
 
                         k++;
                     }
