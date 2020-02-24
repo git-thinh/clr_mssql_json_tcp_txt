@@ -3,16 +3,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <Name>clr_tcp</Name>
+    <Name>clr_json_tcp</Name>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
-    <ProjectGuid>{95e8350a-8436-424f-8ad5-b083e155a891}</ProjectGuid>
+    <ProjectGuid>{18752920-7a7a-4be1-b703-e9a1d166a60e}</ProjectGuid>
     <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
     <RootPath>
     </RootPath>
-    <RootNamespace>clr_tcp</RootNamespace>
-    <AssemblyName>clr_tcp</AssemblyName>
+    <RootNamespace>clr_json_tcp</RootNamespace>
+    <AssemblyName>clr_json_tcp</AssemblyName>
     <ModelCollation>1033, CI</ModelCollation>
     <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
     <DeployToDatabase>True</DeployToDatabase>
@@ -67,6 +67,6 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TCP_Send.cs" />
+    <Compile Include="SqlFunction1.cs" />
   </ItemGroup>
 </Project>
