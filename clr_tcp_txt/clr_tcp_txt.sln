@@ -7,6 +7,27 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "clr_tcp_txt", "clr_tcp_txt\
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "clr_json_tcp", "clr_json_tcp\clr_json_tcp.sqlproj", "{18752920-7A7A-4BE1-B703-E9A1D166A60E}"
 EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "mssql_nodejs", "..\mssql_nodejs\", "{6713398D-1A2C-4800-AB59-00D370FBCBCC}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_59553"
+		Debug.AspNetCompiler.PhysicalPath = "..\mssql_nodejs\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_59553\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_59553"
+		Release.AspNetCompiler.PhysicalPath = "..\mssql_nodejs\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_59553\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "59553"
+		SlnRelativePath = "..\mssql_nodejs\"
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +44,10 @@ Global
 		{18752920-7A7A-4BE1-B703-E9A1D166A60E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18752920-7A7A-4BE1-B703-E9A1D166A60E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{18752920-7A7A-4BE1-B703-E9A1D166A60E}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{6713398D-1A2C-4800-AB59-00D370FBCBCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6713398D-1A2C-4800-AB59-00D370FBCBCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6713398D-1A2C-4800-AB59-00D370FBCBCC}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{6713398D-1A2C-4800-AB59-00D370FBCBCC}.Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

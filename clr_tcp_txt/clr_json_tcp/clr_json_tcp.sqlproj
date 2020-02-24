@@ -68,5 +68,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SqlFunction1.cs" />
+    <Compile Include="SqlStoredProcedure1.cs" />
   </ItemGroup>
 </Project>

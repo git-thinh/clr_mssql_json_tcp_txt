@@ -417,6 +417,33 @@ public partial class UserDefinedFunctions
         Val = kvResult.Val;
     }
 
+    [SqlFunction(DataAccess = DataAccessKind.Read, FillRowMethodName = "KeyValResult_FillRow", TableDefinition = "Id nvarchar(max), Val nvarchar(max)")]
+    public static IEnumerable json___column_type(String query)
+    {
+        ArrayList resultCollection = new ArrayList();
+
+        try
+        {
+            using (SqlConnection conn = new SqlConnection("context connection=true"))
+            {
+                conn.Open();
+                SqlCommand command = new SqlCommand(query, conn);
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    var dtypes = new Dictionary<string, string>() { };
+                    for (var i = 0; i < reader.FieldCount; i++)
+                        resultCollection.Add(new KeyValResult(reader.GetName(i).ToLower(), reader.GetFieldType(i).Name.ToLower()));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            resultCollection.Add(new KeyValResult(":ERROR", ex.Message));
+        }
+
+        return resultCollection;
+    }
+
     [SqlFunction(DataAccess = DataAccessKind.Read, FillRowMethodName = "TableResult_FillRow", TableDefinition = "Id bigint, Val nvarchar(max)")]
     public static IEnumerable json___query(String query)
     {
@@ -425,7 +452,7 @@ public partial class UserDefinedFunctions
         StringBuilder bi = new StringBuilder();
         StringBuilder ids_error = new StringBuilder();
         string json;
-        bool existID = false; 
+        bool existID = false;
 
         try
         {
@@ -442,7 +469,7 @@ public partial class UserDefinedFunctions
                         columns[i] = reader.GetName(i).ToLower();
                         if (columns[i] == "id")
                         {
-                            indexID = i; 
+                            indexID = i;
                             existID = true;
                         }
                     }
@@ -520,9 +547,10 @@ public partial class UserDefinedFunctions
                 {
                     try
                     {
+                        resultCollection.Add(new KeyValResult(kv.Key, new SqlString(kv.Value.ToString())));
+
                         string type = kv.Value.GetType().Name.ToLower();
-                        resultCollection.Add(new KeyValResult("$" + kv.Key, type));
-                        resultCollection.Add(new KeyValResult(kv.Key, kv.Value as string));
+                        resultCollection.Add(new KeyValResult(kv.Key + "$", type));
                     }
                     catch (Exception ex)
                     {
@@ -535,39 +563,180 @@ public partial class UserDefinedFunctions
         return resultCollection;
     }
 
-    [Microsoft.SqlServer.Server.SqlFunction(DataAccess = DataAccessKind.Read)]
-    public static SqlString json___column_type(String query)
+    [SqlFunction()]
+    public static SqlInt64 json___get_int64(String key, Int64 valDef, String json)
     {
+        if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(json)) return new SqlInt64(valDef);
+
+        Dictionary<string, object> vals = null;
+        try
+        {
+            vals = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+        }
+        catch
+        {
+            return new SqlInt64(valDef);
+        }
+
+        if (vals != null && vals.ContainsKey(key))
+        {
+            long v = -1;
+            if (long.TryParse(vals[key].ToString(), out v)) return new SqlInt64(v);
+        }
+
+        return new SqlInt64(valDef);
+    }
+
+    [SqlFunction()]
+    public static SqlString json___get_string(String key, String json)
+    {
+        if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(json)) return new SqlString(null);
+
+        Dictionary<string, object> vals = null;
+        try
+        {
+            vals = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+        }
+        catch
+        {
+            return new SqlString(null);
+        }
+
+        if (vals != null && vals.ContainsKey(key))
+            return new SqlString(vals[key].ToString());
+
+        return new SqlString(null);
+    }
+
+
+
+
+    public static void TableChangedResult_FillRow(object tResultObj,
+        out SqlBoolean OK,
+        out SqlInt64 ID,
+        out SqlString CACHE,
+        out SqlString DB_ACTION,
+        out SqlString VAL,
+        out SqlInt32 SORT)
+    {
+        TableChangedResult r = (TableChangedResult)tResultObj;
+        OK = r.OK;
+        ID = r.ID;
+        CACHE = r.CACHE;
+        DB_ACTION = r.DB_ACTION;
+        VAL = r.VAL;
+        SORT = r.SORT;
+    }
+
+    private class TableChangedResult
+    {
+        public SqlBoolean OK;
+        public SqlInt64 ID;
+        public SqlString CACHE;
+        public SqlString DB_ACTION;
+        public SqlString VAL;
+        public SqlInt32 SORT;
+
+        public TableChangedResult(SqlBoolean ok, SqlInt32 sort, SqlInt64 id, SqlString cache, SqlString db_action, SqlString val)
+        {
+            OK = ok;
+            ID = id;
+            CACHE = cache;
+            DB_ACTION = db_action;
+            VAL = val;
+            SORT = sort;
+        }
+    }
+
+    [SqlFunction(DataAccess = DataAccessKind.Read, FillRowMethodName = "TableChangedResult_FillRow",
+        TableDefinition = "OK BIT, ID BIGINT, CACHE NVARCHAR(255), DB_ACTION NVARCHAR(255), VAL NVARCHAR(MAX), SORT INT")]
+    public static IEnumerable json___changed(Int32 sort, Int64 id, String cache, String db_action, String sql_cmd)
+    {
+        ArrayList resultCollection = new ArrayList();
+        ArrayList errorCollection = new ArrayList();
+
+        bool hasError = false;
+        string json;
+        bool existID = false;
+
         try
         {
             using (SqlConnection conn = new SqlConnection("context connection=true"))
             {
                 conn.Open();
-                SqlCommand command = new SqlCommand(query, conn);
+                SqlCommand command = new SqlCommand(sql_cmd, conn);
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
-                    var dtypes = new Dictionary<string, string>() { };
-                    var cell = new Dictionary<string, int>() { };
+                    int indexID = -1;
+                    var columns = new string[reader.FieldCount];
                     for (var i = 0; i < reader.FieldCount; i++)
-                        dtypes.Add(reader.GetName(i).ToLower(), reader.GetFieldType(i).Name.ToLower());
+                    {
+                        columns[i] = reader.GetName(i).ToLower();
+                        if (columns[i] == "id")
+                        {
+                            indexID = i;
+                            existID = true;
+                        }
+                    }
 
-                    string json = Newtonsoft.Json.JsonConvert.SerializeObject(dtypes, Newtonsoft.Json.Formatting.Indented);
+                    int k = 0;
+                    long id_ = 0;
+                    while (reader.Read())
+                    {
+                        var dic = new Dictionary<string, object>();
+                        for (var i = 0; i < reader.FieldCount; i++)
+                            dic.Add(columns[i], reader.GetValue(i));
 
-                    return new SqlString(json);
+                        id_ = k;
 
-                    //while (reader.Read())
-                    //{ 
-                    //    string json = subfix + JsonConvert.SerializeObject(reader.GetValue(0).ToString(), Formatting.Indented);
-                    //    byte[] buffer = System.Text.Encoding.UTF8.GetBytes(json);
-                    //    stream.Write(buffer, 0, buffer.Length); //sends bytes to server
-                    //}
+                        if (existID)
+                            long.TryParse(dic["id"].ToString(), out id_);
+
+                        json = JsonConvert.SerializeObject(dic);
+
+                        if (json.Length > MAX_NVARCHAR)
+                        {
+                            json = ":ERROR [" + id_.ToString() + "] Json length > " + MAX_NVARCHAR.ToString();
+                            hasError = true;
+                            errorCollection.Add(new TableChangedResult(
+                                                new SqlBoolean(0),
+                                                new SqlInt32(sort),
+                                                new SqlInt64(id),
+                                                new SqlString(cache),
+                                                new SqlString(db_action),
+                                                json));
+                            break;
+                        }
+                        else
+                            resultCollection.Add(new TableChangedResult(
+                                new SqlBoolean(1),
+                                new SqlInt32(sort),
+                                new SqlInt64(id_),
+                                new SqlString(cache),
+                                new SqlString(db_action),
+                                json));
+                        k++;
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            return new SqlString(string.Format("#ERROR:{0}", ex.Message));
+            json = ":ERROR_THROW_EXCEPTION " + ex.Message;
+            hasError = true;
+            errorCollection.Add(new TableChangedResult(
+                                new SqlBoolean(0),
+                                new SqlInt32(sort),
+                                new SqlInt64(id),
+                                new SqlString(cache),
+                                new SqlString(db_action),
+                                json));
         }
+
+        if (hasError)
+            return errorCollection;
+        else
+            return resultCollection;
     }
 
     #endregion
