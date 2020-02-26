@@ -353,6 +353,7 @@ const db___execute = (m) => {
 
 //#endregion
 
+
 const ___MSG = [];
 const f___MSG_PUSH = (res, setting, data) => { ___MSG.push({ client: res, setting: setting, data: data }); };
 const f___MSG_UPDATE = function () {
@@ -362,5 +363,20 @@ const f___MSG_UPDATE = function () {
     }
     setTimeout(function () { f___MSG_UPDATE(); }, 1);
 };
-
 f___MSG_UPDATE();
+
+
+const _READ_LINE = require("readline");
+const _RL = _READ_LINE.createInterface({ input: process.stdin, output: process.stdout });
+_RL.on("line", function (text) {
+    switch (text) {
+        case 'exit':
+            process.exit();
+            break;
+        case 'cls':
+            console.clear(); 
+            break;
+        default: 
+            break;
+    }
+});
