@@ -19,7 +19,7 @@ namespace clr_tcp_txt
 
         static void Main(string[] args)
         {
-            string _ip = "192.168.11.205";
+            string _ip = "127.0.0.1";
             int _port = 6969;
 
             if (!Directory.Exists("txt")) Directory.CreateDirectory("txt");
